@@ -1,9 +1,11 @@
-﻿using WebApi_Registro.Enums;
+﻿using System.ComponentModel.DataAnnotations;
+using WebApi_Registro.Enums;
 
 namespace WebApi_Registro.Models
 {
     public class FuncionarioModel
     {
+        [Key]
         public int Id { get; set; }
         public string Nome { get; set; }
         public string Sobrenome { get; set; }
