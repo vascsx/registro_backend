@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using WebApi_Registro.Models;
 using WebApi_Registro.Service.FuncionarioService;
 
@@ -22,14 +23,14 @@ namespace WebApi_Registro.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<ServiceResponse<FuncionarioModel>>> GetFuncionarioById( int id)
+        public async Task<ActionResult<ServiceResponse<FuncionarioModel>>> GetFuncionarioById(int id)
         {
             ServiceResponse<FuncionarioModel> serviceResponse = await _funcionarioInterface.GetFuncionarioById(id);
             return Ok(serviceResponse);
         }
 
         [HttpPost]
-        public async Task<ActionResult<ServiceResponse<List<FuncionarioModel>>>> CreateFuncionario( FuncionarioModel novoFuncionario)
+        public async Task<ActionResult<ServiceResponse<List<FuncionarioModel>>>> CreateFuncionario(FuncionarioModel novoFuncionario)
         {
             return Ok(await _funcionarioInterface.CreateFuncionario(novoFuncionario));
         }
@@ -49,5 +50,12 @@ namespace WebApi_Registro.Controllers
             return Ok(serviceResponse);
         }
 
+        [HttpDelete]
+        public async Task<ActionResult<ServiceResponse<List<FuncionarioModel>>>> DeleteFuncionario(int id)
+        {
+            ServiceResponse<List<FuncionarioModel>> serviceResponse = await _funcionarioInterface.DeleteFuncionario(id);
+            return Ok(serviceResponse);
+
+        }
     }
 }
