@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 using WebApi_Registro.DataContext;
 using WebApi_Registro.Models;
 
@@ -7,7 +8,8 @@ namespace WebApi_Registro.Service.FuncionarioService
     public class FuncionarioService : IFuncionarioInterface
     {
         private readonly ApplicationDbContext _context;
-        public FuncionarioService(ApplicationDbContext context){
+        public FuncionarioService(ApplicationDbContext context)
+        {
             _context = context;
         }
 
@@ -17,7 +19,7 @@ namespace WebApi_Registro.Service.FuncionarioService
 
             try
             {
-                if(novoFuncionario == null)
+                if (novoFuncionario == null)
                 {
                     serviceResponse.Dados = null;
                     serviceResponse.Mensagem = "Informar dados!";
@@ -30,7 +32,8 @@ namespace WebApi_Registro.Service.FuncionarioService
 
                 serviceResponse.Dados = _context.Funcionarios.ToList();
 
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 serviceResponse.Mensagem = ex.Message;
                 serviceResponse.Sucesso = false;
@@ -41,7 +44,7 @@ namespace WebApi_Registro.Service.FuncionarioService
 
         }
 
-        public Task<ServiceResponse<List<FuncionarioModel>>> DeleteFuncionario(int id)
+        public async Task<ServiceResponse<List<FuncionarioModel>>> DeleteFuncionario(int id)
         {
             throw new NotImplementedException();
         }
@@ -53,16 +56,16 @@ namespace WebApi_Registro.Service.FuncionarioService
             {
                 FuncionarioModel funcionario = _context.Funcionarios.FirstOrDefault(x => x.Id == id);
 
-                if ( funcionario == null)
+                if (funcionario == null)
                 {
                     serviceResponse.Dados = null;
                     serviceResponse.Mensagem = "Usuário não localizado";
-                    serviceResponse.Sucesso= false;
+                    serviceResponse.Sucesso = false;
                 }
                 serviceResponse.Dados = funcionario;
 
             }
-            catch(Exception ex) 
+            catch (Exception ex)
             {
                 serviceResponse.Mensagem = ex.Message;
                 serviceResponse.Sucesso = false;
@@ -77,11 +80,12 @@ namespace WebApi_Registro.Service.FuncionarioService
             try
             {
                 serviceResponse.Dados = _context.Funcionarios.ToList();
-                if ( serviceResponse.Dados.Count == 0)
+                if (serviceResponse.Dados.Count == 0)
                 {
                     serviceResponse.Mensagem = "Nenhum dado encontrado!";
                 }
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 serviceResponse.Mensagem = ex.Message;
                 serviceResponse.Sucesso = false;
@@ -96,7 +100,7 @@ namespace WebApi_Registro.Service.FuncionarioService
             try
             {
                 FuncionarioModel funcionario = _context.Funcionarios.FirstOrDefault(x => x.Id == id);
-                if ( funcionario == null)
+                if (funcionario == null)
                 {
                     serviceResponse.Dados = null;
                     serviceResponse.Mensagem = "Usuario não localizado";
@@ -110,7 +114,7 @@ namespace WebApi_Registro.Service.FuncionarioService
 
                 serviceResponse.Dados = _context.Funcionarios.ToList();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 serviceResponse.Mensagem = ex.Message;
                 serviceResponse.Sucesso = false;
@@ -125,24 +129,32 @@ namespace WebApi_Registro.Service.FuncionarioService
 
             try
             {
-                FuncionarioModel funcionario = _context.Funcionarios.FirstOrDefault( x => x.Id == editadoFuncionario.Id);
-                if ( funcionario == null )
+                FuncionarioModel funcionario = _context.Funcionarios.AsNoTracking().FirstOrDefault(x => x.Id == editadoFuncionario.Id);
+
+                if (funcionario == null)
                 {
                     serviceResponse.Dados = null;
                     serviceResponse.Mensagem = "Usuário não encontrado!";
                     serviceResponse.Sucesso = false;
                 }
-                funcionario.DataDeAlteracao = DateTime.Now.ToLocalTime();
-                _context.Funcionarios.Update(editadoFuncionario);
-                await _context.SaveChangesAsync();
-                serviceResponse.Dados = _context.Funcionarios.ToList();
+                else
+                {
+                    funcionario.Nome = editadoFuncionario.Nome;
+                    funcionario.DataDeAlteracao = DateTime.Now.ToLocalTime();
 
-            }catch(Exception ex)
+                    _context.Funcionarios.Update(editadoFuncionario);
+                    await _context.SaveChangesAsync();
+
+                    serviceResponse.Dados = _context.Funcionarios.ToList();
+                }
+            }
+            catch (Exception ex)
             {
                 serviceResponse.Mensagem = ex.Message;
-                serviceResponse.Sucesso= false;
+                serviceResponse.Sucesso = false;
             }
+
             return serviceResponse;
         }
     }
-}
+    }
