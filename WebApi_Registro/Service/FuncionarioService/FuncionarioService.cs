@@ -1,4 +1,5 @@
-﻿using WebApi_Registro.DataContext;
+﻿using System.Collections.Generic;
+using WebApi_Registro.DataContext;
 using WebApi_Registro.Models;
 
 namespace WebApi_Registro.Service.FuncionarioService
@@ -45,9 +46,28 @@ namespace WebApi_Registro.Service.FuncionarioService
             throw new NotImplementedException();
         }
 
-        public Task<ServiceResponse<FuncionarioModel>> GetFuncionarioById(int id)
+        public async Task<ServiceResponse<FuncionarioModel>> GetFuncionarioById(int id)
         {
-            throw new NotImplementedException();
+            ServiceResponse<FuncionarioModel> serviceResponse = new ServiceResponse<FuncionarioModel>();
+            try
+            {
+                FuncionarioModel funcionario = _context.Funcionarios.FirstOrDefault(x => x.Id == id);
+
+                if ( funcionario == null)
+                {
+                    serviceResponse.Dados = null;
+                    serviceResponse.Mensagem = "Usuário não localizado";
+                    serviceResponse.Sucesso= false;
+                }
+                serviceResponse.Dados = funcionario;
+
+            }
+            catch(Exception ex) 
+            {
+                serviceResponse.Mensagem = ex.Message;
+                serviceResponse.Sucesso = false;
+            }
+            return serviceResponse;
         }
 
         public async Task<ServiceResponse<List<FuncionarioModel>>> GetFuncionarios()
@@ -70,14 +90,59 @@ namespace WebApi_Registro.Service.FuncionarioService
             return serviceResponse;
         }
 
-        public Task<ServiceResponse<List<FuncionarioModel>>> InativaFuncionario(int id)
+        public async Task<ServiceResponse<List<FuncionarioModel>>> InativaFuncionario(int id)
         {
-            throw new NotImplementedException();
+            ServiceResponse<List<FuncionarioModel>> serviceResponse = new ServiceResponse<List<FuncionarioModel>>();
+            try
+            {
+                FuncionarioModel funcionario = _context.Funcionarios.FirstOrDefault(x => x.Id == id);
+                if ( funcionario == null)
+                {
+                    serviceResponse.Dados = null;
+                    serviceResponse.Mensagem = "Usuario não localizado";
+                    serviceResponse.Sucesso = false;
+                }
+                funcionario.Ativo = false;
+                funcionario.DataDeAlteracao = DateTime.Now.ToLocalTime();
+
+                _context.Funcionarios.Update(funcionario);
+                await _context.SaveChangesAsync();
+
+                serviceResponse.Dados = _context.Funcionarios.ToList();
+            }
+            catch(Exception ex)
+            {
+                serviceResponse.Mensagem = ex.Message;
+                serviceResponse.Sucesso = false;
+            }
+
+            return serviceResponse;
         }
 
-        public Task<ServiceResponse<List<FuncionarioModel>>> UpdateFuncionario(FuncionarioModel editadoFuncionario)
+        public async Task<ServiceResponse<List<FuncionarioModel>>> UpdateFuncionario(FuncionarioModel editadoFuncionario)
         {
-            throw new NotImplementedException();
+            ServiceResponse<List<FuncionarioModel>> serviceResponse = new ServiceResponse<List<FuncionarioModel>>();
+
+            try
+            {
+                FuncionarioModel funcionario = _context.Funcionarios.FirstOrDefault( x => x.Id == editadoFuncionario.Id);
+                if ( funcionario == null )
+                {
+                    serviceResponse.Dados = null;
+                    serviceResponse.Mensagem = "Usuário não encontrado!";
+                    serviceResponse.Sucesso = false;
+                }
+                funcionario.DataDeAlteracao = DateTime.Now.ToLocalTime();
+                _context.Funcionarios.Update(editadoFuncionario);
+                await _context.SaveChangesAsync();
+                serviceResponse.Dados = _context.Funcionarios.ToList();
+
+            }catch(Exception ex)
+            {
+                serviceResponse.Mensagem = ex.Message;
+                serviceResponse.Sucesso= false;
+            }
+            return serviceResponse;
         }
     }
 }

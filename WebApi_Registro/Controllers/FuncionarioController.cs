@@ -21,10 +21,33 @@ namespace WebApi_Registro.Controllers
             return Ok(await _funcionarioInterface.GetFuncionarios());
         }
 
+        [HttpGet("{id}")]
+        public async Task<ActionResult<ServiceResponse<FuncionarioModel>>> GetFuncionarioById( int id)
+        {
+            ServiceResponse<FuncionarioModel> serviceResponse = await _funcionarioInterface.GetFuncionarioById(id);
+            return Ok(serviceResponse);
+        }
+
         [HttpPost]
         public async Task<ActionResult<ServiceResponse<List<FuncionarioModel>>>> CreateFuncionario( FuncionarioModel novoFuncionario)
         {
             return Ok(await _funcionarioInterface.CreateFuncionario(novoFuncionario));
         }
+
+
+        [HttpPut("inativaFuncionario")]
+        public async Task<ActionResult<ServiceResponse<List<FuncionarioModel>>>> InativaFuncionario(int id)
+        {
+            ServiceResponse<List<FuncionarioModel>> serviceResponse = await _funcionarioInterface.InativaFuncionario(id);
+            return Ok(serviceResponse);
+        }
+
+        [HttpPut]
+        public async Task<ActionResult<ServiceResponse<List<FuncionarioModel>>>> UpdateFuncionario(FuncionarioModel editadoFuncionario)
+        {
+            ServiceResponse<List<FuncionarioModel>> serviceResponse = await _funcionarioInterface.UpdateFuncionario(editadoFuncionario);
+            return Ok(serviceResponse);
+        }
+
     }
 }
