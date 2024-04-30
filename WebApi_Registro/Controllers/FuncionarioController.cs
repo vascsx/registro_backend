@@ -36,11 +36,13 @@ namespace WebApi_Registro.Controllers
         }
 
 
-        [HttpPut("inativaFuncionario")]
+        [HttpPut("inativaFuncionario/{id}")]
         public async Task<ActionResult<ServiceResponse<List<FuncionarioModel>>>> InativaFuncionario(int id)
         {
             ServiceResponse<List<FuncionarioModel>> serviceResponse = await _funcionarioInterface.InativaFuncionario(id);
+
             return Ok(serviceResponse);
+
         }
 
         [HttpPut]

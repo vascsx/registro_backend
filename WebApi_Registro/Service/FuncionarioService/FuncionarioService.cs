@@ -119,15 +119,18 @@ namespace WebApi_Registro.Service.FuncionarioService
         public async Task<ServiceResponse<List<FuncionarioModel>>> InativaFuncionario(int id)
         {
             ServiceResponse<List<FuncionarioModel>> serviceResponse = new ServiceResponse<List<FuncionarioModel>>();
+
             try
             {
                 FuncionarioModel funcionario = _context.Funcionarios.FirstOrDefault(x => x.Id == id);
+
                 if (funcionario == null)
                 {
                     serviceResponse.Dados = null;
-                    serviceResponse.Mensagem = "Usuario não localizado";
+                    serviceResponse.Mensagem = "Usuário não localizado!";
                     serviceResponse.Sucesso = false;
                 }
+
                 funcionario.Ativo = false;
                 funcionario.DataDeAlteracao = DateTime.Now.ToLocalTime();
 
@@ -135,6 +138,8 @@ namespace WebApi_Registro.Service.FuncionarioService
                 await _context.SaveChangesAsync();
 
                 serviceResponse.Dados = _context.Funcionarios.ToList();
+
+
             }
             catch (Exception ex)
             {
