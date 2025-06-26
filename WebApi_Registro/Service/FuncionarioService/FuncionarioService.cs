@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using WebApi_Registro.DataContext;
 using WebApi_Registro.Models;
-z
+
 namespace WebApi_Registro.Service.FuncionarioService
 {
     public class FuncionarioService : IFuncionarioInterface
