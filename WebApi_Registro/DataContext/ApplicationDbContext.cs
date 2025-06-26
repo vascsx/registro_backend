@@ -9,5 +9,8 @@ namespace WebApi_Registro.DataContext
             
         }
         public DbSet<FuncionarioModel> Funcionarios { get; set; }
+        public DbSet<DepartamentoModel> Departamentos { get; set; }
+        public DbSet<CargoModel> Cargos { get; set; }
+        public DbSet<ProjetoModel> Projetos { get; set; }
     }
 }

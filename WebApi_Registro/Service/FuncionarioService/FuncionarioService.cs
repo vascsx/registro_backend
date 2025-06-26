@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using WebApi_Registro.DataContext;
 using WebApi_Registro.Models;
-
+z
 namespace WebApi_Registro.Service.FuncionarioService
 {
     public class FuncionarioService : IFuncionarioInterface
@@ -14,35 +14,65 @@ namespace WebApi_Registro.Service.FuncionarioService
         }
 
         public async Task<ServiceResponse<List<FuncionarioModel>>> CreateFuncionario(FuncionarioModel novoFuncionario)
+{
+    ServiceResponse<List<FuncionarioModel>> serviceResponse = new ServiceResponse<List<FuncionarioModel>>();
+
+    try
+    {
+        if (novoFuncionario == null)
         {
-            ServiceResponse<List<FuncionarioModel>> serviceResponse = new ServiceResponse<List<FuncionarioModel>>();
-
-            try
-            {
-                if (novoFuncionario == null)
-                {
-                    serviceResponse.Dados = null;
-                    serviceResponse.Mensagem = "Informar dados!";
-                    serviceResponse.Sucesso = false;
-
-                    return serviceResponse;
-                }
-                _context.Add(novoFuncionario);
-                await _context.SaveChangesAsync();
-
-                serviceResponse.Dados = _context.Funcionarios.ToList();
-
-            }
-            catch (Exception ex)
-            {
-                serviceResponse.Mensagem = ex.Message;
-                serviceResponse.Sucesso = false;
-            }
-
+            serviceResponse.Dados = null;
+            serviceResponse.Mensagem = "Informar dados!";
+            serviceResponse.Sucesso = false;
             return serviceResponse;
-
-
         }
+
+        // Validação dos IDs relacionados
+        var departamento = await _context.Departamentos.FindAsync(novoFuncionario.DepartamentoId);
+        var cargo = await _context.Cargos.FindAsync(novoFuncionario.CargoId);
+        ProjetoModel projeto = null;
+        if (novoFuncionario.ProjetoId.HasValue)
+            projeto = await _context.Projetos.FindAsync(novoFuncionario.ProjetoId.Value);
+
+        if (departamento == null)
+        {
+            serviceResponse.Dados = null;
+            serviceResponse.Mensagem = "Departamento inválido!";
+            serviceResponse.Sucesso = false;
+            return serviceResponse;
+        }
+        if (cargo == null)
+        {
+            serviceResponse.Dados = null;
+            serviceResponse.Mensagem = "Cargo inválido!";
+            serviceResponse.Sucesso = false;
+            return serviceResponse;
+        }
+        if (novoFuncionario.ProjetoId.HasValue && projeto == null)
+        {
+            serviceResponse.Dados = null;
+            serviceResponse.Mensagem = "Projeto inválido!";
+            serviceResponse.Sucesso = false;
+            return serviceResponse;
+        }
+
+        _context.Add(novoFuncionario);
+        await _context.SaveChangesAsync();
+
+        serviceResponse.Dados = await _context.Funcionarios
+            .Include(f => f.Departamento)
+            .Include(f => f.Cargo)
+            .Include(f => f.Projeto)
+            .ToListAsync();
+    }
+    catch (Exception ex)
+    {
+        serviceResponse.Mensagem = ex.Message;
+        serviceResponse.Sucesso = false;
+    }
+
+    return serviceResponse;
+}
 
         public async Task<ServiceResponse<List<FuncionarioModel>>> DeleteFuncionario(int id)
         {
@@ -71,29 +101,35 @@ namespace WebApi_Registro.Service.FuncionarioService
 
         }
 
-        public async Task<ServiceResponse<FuncionarioModel>> GetFuncionarioById(int id)
+    public async Task<ServiceResponse<FuncionarioModel>> GetFuncionarioById(int id)
+    {
+    ServiceResponse<FuncionarioModel> serviceResponse = new ServiceResponse<FuncionarioModel>();
+    try
+    {
+        FuncionarioModel funcionario = await _context.Funcionarios
+            .Include(f => f.Departamento)
+            .Include(f => f.Cargo)
+            .Include(f => f.Projeto)
+            .FirstOrDefaultAsync(x => x.Id == id);
+
+        if (funcionario == null)
         {
-            ServiceResponse<FuncionarioModel> serviceResponse = new ServiceResponse<FuncionarioModel>();
-            try
-            {
-                FuncionarioModel funcionario = _context.Funcionarios.FirstOrDefault(x => x.Id == id);
-
-                if (funcionario == null)
-                {
-                    serviceResponse.Dados = null;
-                    serviceResponse.Mensagem = "Usuário não localizado";
-                    serviceResponse.Sucesso = false;
-                }
-                serviceResponse.Dados = funcionario;
-
-            }
-            catch (Exception ex)
-            {
-                serviceResponse.Mensagem = ex.Message;
-                serviceResponse.Sucesso = false;
-            }
-            return serviceResponse;
+            serviceResponse.Dados = null;
+            serviceResponse.Mensagem = "Usuário não localizado";
+            serviceResponse.Sucesso = false;
         }
+        else
+        {
+            serviceResponse.Dados = funcionario;
+        }
+    }
+    catch (Exception ex)
+    {
+        serviceResponse.Mensagem = ex.Message;
+        serviceResponse.Sucesso = false;
+    }
+    return serviceResponse;
+}
 
         public async Task<ServiceResponse<List<FuncionarioModel>>> GetFuncionarios()
         {
