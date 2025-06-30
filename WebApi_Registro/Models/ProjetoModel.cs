@@ -9,5 +9,7 @@ namespace WebApi_Registro.Models
         public string Nome { get; set; }
         public DateTime DataInicio { get; set; }
         public DateTime? DataFim { get; set; }
+        public DateTime DataDeCriacao { get; set; } = DateTime.Now.ToLocalTime();
+        public DateTime DataDeAlteracao { get; set; } = DateTime.Now.ToLocalTime();
     }
 }

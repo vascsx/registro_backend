@@ -1,16 +1,20 @@
 using Microsoft.EntityFrameworkCore;
 using WebApi_Registro.DataContext;
+using WebApi_Registro.Service.CargoService;
+using WebApi_Registro.Service.DepartamentoService;
 using WebApi_Registro.Service.FuncionarioService;
+using WebApi_Registro.Service.ProjetoService;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IFuncionarioInterface, FuncionarioService>();
+builder.Services.AddScoped<IDepartamentoInterface, DepartamentoService>();
+builder.Services.AddScoped<ICargoInterface, CargoService>();
+builder.Services.AddScoped<IProjetoInterface, ProjetoService>();
 
-// Conection Sql Server
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
@@ -18,14 +22,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// Habilitar CORS
 app.UseCors(options =>
 {
     options.AllowAnyOrigin()
