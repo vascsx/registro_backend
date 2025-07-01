@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using WebApi_Registro.DataContext;
 using WebApi_Registro.Models;
+using WebApi_Registro.DTOs;
+
 
 namespace WebApi_Registro.Service.FuncionarioService
 {
@@ -13,9 +15,10 @@ namespace WebApi_Registro.Service.FuncionarioService
             _context = context;
         }
 
-        public async Task<ServiceResponse<List<FuncionarioModel>>> CreateFuncionario(FuncionarioModel novoFuncionario)
+
+        public async Task<ServiceResponse<List<FuncionarioModel>>> CreateFuncionario(FuncionarioDTO novoFuncionario)
         {
-            ServiceResponse<List<FuncionarioModel>> serviceResponse = new ServiceResponse<List<FuncionarioModel>>();
+            var serviceResponse = new ServiceResponse<List<FuncionarioModel>>();
 
             try
             {
@@ -30,32 +33,35 @@ namespace WebApi_Registro.Service.FuncionarioService
                 var departamento = await _context.Departamentos.FindAsync(novoFuncionario.DepartamentoId);
                 var cargo = await _context.Cargos.FindAsync(novoFuncionario.CargoId);
                 ProjetoModel projeto = null;
+
                 if (novoFuncionario.ProjetoId.HasValue)
                     projeto = await _context.Projetos.FindAsync(novoFuncionario.ProjetoId.Value);
 
-                if (departamento == null)
+                if (departamento == null || cargo == null || (novoFuncionario.ProjetoId.HasValue && projeto == null))
                 {
                     serviceResponse.Dados = null;
-                    serviceResponse.Mensagem = "Departamento inválido!";
-                    serviceResponse.Sucesso = false;
-                    return serviceResponse;
-                }
-                if (cargo == null)
-                {
-                    serviceResponse.Dados = null;
-                    serviceResponse.Mensagem = "Cargo inválido!";
-                    serviceResponse.Sucesso = false;
-                    return serviceResponse;
-                }
-                if (novoFuncionario.ProjetoId.HasValue && projeto == null)
-                {
-                    serviceResponse.Dados = null;
-                    serviceResponse.Mensagem = "Projeto inválido!";
+                    serviceResponse.Mensagem =
+                        departamento == null ? "Departamento inválido!" :
+                        cargo == null ? "Cargo inválido!" :
+                        "Projeto inválido!";
                     serviceResponse.Sucesso = false;
                     return serviceResponse;
                 }
 
-                _context.Add(novoFuncionario);
+                var funcionario = new FuncionarioModel
+                {
+                    Nome = novoFuncionario.Nome,
+                    Sobrenome = novoFuncionario.Sobrenome,
+                    Ativo = novoFuncionario.Ativo,
+                    Turno = novoFuncionario.Turno,
+                    DepartamentoId = novoFuncionario.DepartamentoId,
+                    CargoId = novoFuncionario.CargoId,
+                    ProjetoId = novoFuncionario.ProjetoId,
+                    DataDeCriacao = DateTime.Now.ToLocalTime(),
+                    DataDeAlteracao = DateTime.Now.ToLocalTime()
+                };
+
+                _context.Funcionarios.Add(funcionario);
                 await _context.SaveChangesAsync();
 
                 serviceResponse.Dados = await _context.Funcionarios
@@ -185,30 +191,57 @@ namespace WebApi_Registro.Service.FuncionarioService
             return serviceResponse;
         }
 
-        public async Task<ServiceResponse<List<FuncionarioModel>>> UpdateFuncionario(FuncionarioModel editadoFuncionario)
+        public async Task<ServiceResponse<List<FuncionarioModel>>> UpdateFuncionario(FuncionarioDTO editadoFuncionario)
         {
-            ServiceResponse<List<FuncionarioModel>> serviceResponse = new ServiceResponse<List<FuncionarioModel>>();
+            var serviceResponse = new ServiceResponse<List<FuncionarioModel>>();
 
             try
             {
-                FuncionarioModel funcionario = _context.Funcionarios.AsNoTracking().FirstOrDefault(x => x.Id == editadoFuncionario.Id);
+                var funcionario = await _context.Funcionarios.FirstOrDefaultAsync(x => x.Id == editadoFuncionario.Id);
 
                 if (funcionario == null)
                 {
                     serviceResponse.Dados = null;
                     serviceResponse.Mensagem = "Usuário não encontrado!";
                     serviceResponse.Sucesso = false;
+                    return serviceResponse;
                 }
-                else
+
+                var departamento = await _context.Departamentos.FindAsync(editadoFuncionario.DepartamentoId);
+                var cargo = await _context.Cargos.FindAsync(editadoFuncionario.CargoId);
+                ProjetoModel projeto = null;
+
+                if (editadoFuncionario.ProjetoId.HasValue)
+                    projeto = await _context.Projetos.FindAsync(editadoFuncionario.ProjetoId.Value);
+
+                if (departamento == null || cargo == null || (editadoFuncionario.ProjetoId.HasValue && projeto == null))
                 {
-                    funcionario.Nome = editadoFuncionario.Nome;
-                    funcionario.DataDeAlteracao = DateTime.Now.ToLocalTime();
-
-                    _context.Funcionarios.Update(editadoFuncionario);
-                    await _context.SaveChangesAsync();
-
-                    serviceResponse.Dados = _context.Funcionarios.ToList();
+                    serviceResponse.Dados = null;
+                    serviceResponse.Mensagem =
+                        departamento == null ? "Departamento inválido!" :
+                        cargo == null ? "Cargo inválido!" :
+                        "Projeto inválido!";
+                    serviceResponse.Sucesso = false;
+                    return serviceResponse;
                 }
+
+                funcionario.Nome = editadoFuncionario.Nome;
+                funcionario.Sobrenome = editadoFuncionario.Sobrenome;
+                funcionario.Ativo = editadoFuncionario.Ativo;
+                funcionario.Turno = editadoFuncionario.Turno;
+                funcionario.DepartamentoId = editadoFuncionario.DepartamentoId;
+                funcionario.CargoId = editadoFuncionario.CargoId;
+                funcionario.ProjetoId = editadoFuncionario.ProjetoId;
+                funcionario.DataDeAlteracao = DateTime.Now.ToLocalTime();
+
+                _context.Funcionarios.Update(funcionario);
+                await _context.SaveChangesAsync();
+
+                serviceResponse.Dados = await _context.Funcionarios
+                    .Include(f => f.Departamento)
+                    .Include(f => f.Cargo)
+                    .Include(f => f.Projeto)
+                    .ToListAsync();
             }
             catch (Exception ex)
             {
@@ -218,5 +251,6 @@ namespace WebApi_Registro.Service.FuncionarioService
 
             return serviceResponse;
         }
+
     }
 }

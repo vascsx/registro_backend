@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using WebApi_Registro.Models;
 using WebApi_Registro.Service.FuncionarioService;
+using WebApi_Registro.DTOs;
+
 
 namespace WebApi_Registro.Controllers
 {
@@ -30,11 +32,10 @@ namespace WebApi_Registro.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<ServiceResponse<List<FuncionarioModel>>>> CreateFuncionario(FuncionarioModel novoFuncionario)
+        public async Task<ActionResult<ServiceResponse<List<FuncionarioModel>>>> CreateFuncionario([FromBody] FuncionarioDTO novoFuncionario)
         {
             return Ok(await _funcionarioInterface.CreateFuncionario(novoFuncionario));
         }
-
 
         [HttpPut("inativaFuncionario/{id}")]
         public async Task<ActionResult<ServiceResponse<List<FuncionarioModel>>>> InativaFuncionario(int id)
@@ -46,11 +47,12 @@ namespace WebApi_Registro.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult<ServiceResponse<List<FuncionarioModel>>>> UpdateFuncionario(FuncionarioModel editadoFuncionario)
+        public async Task<ActionResult<ServiceResponse<List<FuncionarioModel>>>> UpdateFuncionario(FuncionarioDTO editadoFuncionario)
         {
-            ServiceResponse<List<FuncionarioModel>> serviceResponse = await _funcionarioInterface.UpdateFuncionario(editadoFuncionario);
+            var serviceResponse = await _funcionarioInterface.UpdateFuncionario(editadoFuncionario);
             return Ok(serviceResponse);
         }
+
 
         [HttpDelete]
         public async Task<ActionResult<ServiceResponse<List<FuncionarioModel>>>> DeleteFuncionario(int id)
